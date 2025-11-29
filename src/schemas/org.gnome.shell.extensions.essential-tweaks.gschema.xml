@@ -10,5 +10,9 @@
       <default>true</default>
     </key>
 
+    <key name="workspace-wraparound" type="b">
+      <default>true</default>
+    </key>
+
   </schema>
 </schemalist>

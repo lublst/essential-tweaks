@@ -34,8 +34,15 @@ export default class EssentialTweaksPreferences extends ExtensionPreferences {
     });
     group.add(clickToCloseOverviewRow);
 
+    const workspaceWraparoundRow = new Adw.SwitchRow({
+      title: _("Workspace Wraparound"),
+      subtitle: _("Allow switching from the last workspace to the first and vice versa")
+    });
+    group.add(workspaceWraparoundRow);
+
     // Bind settings
     window._settings.bind("no-window-attention", noWindowAttentionRow, "active", Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind("click-to-close-overview", clickToCloseOverviewRow, "active", Gio.SettingsBindFlags.DEFAULT);
+    window._settings.bind("workspace-wraparound", workspaceWraparoundRow, "active", Gio.SettingsBindFlags.DEFAULT);
   }
 }
