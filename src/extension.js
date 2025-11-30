@@ -1,83 +1,165 @@
-import Clutter from "gi://Clutter";
-import Meta from "gi://Meta";
+import Clutter from 'gi://Clutter';
+import Meta from 'gi://Meta';
 
-import { Extension } from "resource:///org/gnome/shell/extensions/extension.js";
-import * as Main from "resource:///org/gnome/shell/ui/main.js";
-
-const OverviewSearchBox = Main.overview._overview._controls._searchEntry;
-const OverviewGroup = Main.layoutManager.overviewGroup;
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
 export default class EssentialTweaksExtension extends Extension {
   enable() {
-    // Load extension settings
     this._settings = this.getSettings();
+    this._signals = [];
+    this._modules = [
+      ['no-window-attention',
+        this._updateNoWindowAttention.bind(this),
+        this._disableNoWindowAttention.bind(this)],
+      ['click-to-close-overview',
+        this._updateClickToCloseOverview.bind(this),
+        this._disableClickToCloseOverview.bind(this)],
+      ['show-overview-on-startup',
+        this._updateShowOverviewOnStartup.bind(this),
+        this._enableShowOverviewOnStartup.bind(this)],
+      ['workspace-wraparound',
+        this._updateWorkspaceWraparound.bind(this),
+        this._disableWorkspaceWraparound.bind(this)]
+    ];
 
-    // Focus new windows instead of showing a "window is ready" notification
-    this._windowAttentionHandler = global.display.connect("window-demands-attention", (_, window) => {
-      if (this._settings.get_boolean("no-window-attention") && !Main.overview._shown) {
-        Main.activateWindow(window);
-      }
+    // Bind module settings
+    this._modules.forEach(([name, update, _disable]) => {
+      update();
+
+      this._signals.push(this._settings.connect(`changed::${name}`, () => {
+        update();
+      }));
     });
+  }
 
-    // Click anywhere to close the overview
+  disable() {
+    // Disconnect signals and disable all modules
+    this._signals.forEach(signal => this._settings.disconnect(signal));
+    this._modules.forEach(([_name, _update, disable]) => disable());
+
+    this._settings = null;
+    this._signals = null;
+    this._modules = null;
+  }
+
+  _enableClickToCloseOverview() {
     this._overviewClickGesture = new Clutter.ClickGesture();
 
-    this._overviewClickGesture.connect("recognize", (action) => {
-      if (!this._settings.get_boolean("click-to-close-overview")) {
-        return;
-      }
-
+    this._overviewClickGesture.connect('recognize', action => {
       // Only allow left click
       if (action.get_button() > Clutter.BUTTON_PRIMARY) {
         return;
       }
 
       // Ignore clicks on the search box
+      const searchEntry = Main.overview._overview._controls._searchEntry;
       const [x, y] = global.get_pointer();
       let actor = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
 
       while (actor) {
-        if (actor === OverviewSearchBox) {
+        if (actor === searchEntry) {
           return;
         }
 
         actor = actor.get_parent();
       }
 
+      // Close the overview
       Main.overview.toggle();
     });
 
-    OverviewGroup.add_action(this._overviewClickGesture);
+    Main.layoutManager.overviewGroup.add_action(this._overviewClickGesture);
+  }
 
-    // Workspace wraparound
-    this._updateWorkspaceWraparound();
+  _disableClickToCloseOverview() {
+    if (this._overviewClickGesture) {
+      Main.layoutManager.overviewGroup.remove_action(this._overviewClickGesture);
+    }
 
-    this._settings.connect("changed::workspace-wraparound", () => {
-      this._updateWorkspaceWraparound();
+    this._overviewClickGesture = null;
+  }
+
+  _updateClickToCloseOverview() {
+    if (this._settings.get_boolean('click-to-close-overview')) {
+      this._enableClickToCloseOverview();
+    } else {
+      this._disableClickToCloseOverview();
+    }
+  }
+
+  _enableNoWindowAttention() {
+    this._windowAttentionHandler = global.display.connect('window-demands-attention', (_, window) => {
+      // Ignore when in overview
+      if (Main.overview._shown) {
+        return;
+      }
+
+      // Focus the window
+      Main.activateWindow(window);
     });
   }
 
-  disable() {
-    global.display.disconnect(this._windowAttentionHandler);
-    OverviewGroup.remove_action(this._overviewClickGesture);
-    this._disableWorkspaceWraparound();
+  _disableNoWindowAttention() {
+    if (this._windowAttentionHandler) {
+      global.display.disconnect(this._windowAttentionHandler);
+    }
 
     this._windowAttentionHandler = null;
-    this._overviewClickGesture = null;
-    this._settings = null;
   }
 
-  _updateWorkspaceWraparound() {
-    if (this._settings.get_boolean("workspace-wraparound")) {
-      this._enableWorkspaceWraparound();
+  _updateNoWindowAttention() {
+    if (this._settings.get_boolean('no-window-attention')) {
+      this._enableNoWindowAttention();
     } else {
-      this._disableWorkspaceWraparound();
+      this._disableNoWindowAttention();
+    }
+  }
+
+  _enableShowOverviewOnStartup() {
+    if (this._originalHasOverview != null) {
+      Main.sessionMode.hasOverview = this._originalHasOverview;
+    }
+
+    if (this._startupHandler) {
+      Main.layoutManager.disconnect(this._startupHandler);
+    }
+
+    this._originalHasOverview = null;
+    this._startupHandler = null;
+  }
+
+  _disableShowOverviewOnStartup() {
+    if (!Main.layoutManager._startingUp || this._startupHandler) {
+      return;
+    }
+
+    // Disable the overview entirely
+    if (this._originalHasOverview != null) {
+      this._originalHasOverview = Main.sessionMode.hasOverview;
+    }
+
+    Main.sessionMode.hasOverview = false;
+
+    // Restore the original state after startup is complete
+    this._startupHandler = Main.layoutManager.connect('startup-complete', () => {
+      this._enableShowOverviewOnStartup();
+    });
+  }
+
+  _updateShowOverviewOnStartup() {
+    if (this._settings.get_boolean('show-overview-on-startup')) {
+      this._enableShowOverviewOnStartup();
+    } else {
+      this._disableShowOverviewOnStartup();
     }
   }
 
   _enableWorkspaceWraparound() {
+    // Back up the original workspace prototype
     this._originalWorkspaceProto = Meta.Workspace.prototype.get_neighbor;
 
+    // Monkey patching time
     Meta.Workspace.prototype.get_neighbor = function (direction) {
       let index = this.index();
       let lastIndex = global.workspace_manager.n_workspaces - 1;
@@ -99,5 +181,13 @@ export default class EssentialTweaksExtension extends Extension {
     }
 
     this._originalWorkspaceProto = null;
+  }
+
+  _updateWorkspaceWraparound() {
+    if (this._settings.get_boolean('workspace-wraparound')) {
+      this._enableWorkspaceWraparound();
+    } else {
+      this._disableWorkspaceWraparound();
+    }
   }
 }

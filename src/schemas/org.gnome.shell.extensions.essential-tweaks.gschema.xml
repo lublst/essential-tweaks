@@ -2,11 +2,15 @@
 <schemalist>
   <schema id="org.gnome.shell.extensions.essential-tweaks" path="/org/gnome/shell/extensions/essential-tweaks/">
 
+    <key name="click-to-close-overview" type="b">
+      <default>true</default>
+    </key>
+
     <key name="no-window-attention" type="b">
       <default>true</default>
     </key>
 
-    <key name="click-to-close-overview" type="b">
+    <key name="show-overview-on-startup" type="b">
       <default>true</default>
     </key>
 

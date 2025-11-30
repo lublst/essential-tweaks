@@ -1,48 +1,56 @@
-import Gio from "gi://Gio";
-import Adw from "gi://Adw";
+import Gio from 'gi://Gio';
+import Adw from 'gi://Adw';
 
-import { ExtensionPreferences, gettext as _ } from "resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js";
+import { ExtensionPreferences, gettext as _ } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 export default class EssentialTweaksPreferences extends ExtensionPreferences {
   fillPreferencesWindow(window) {
-    // Load extension settings
-    window._settings = this.getSettings();
-
-    // Create the preferences window
     const page = new Adw.PreferencesPage({
-      title: _("General"),
-      icon_name: "preferences-other-symbolic"
+      title: _('Behavior'),
+      icon_name: 'preferences-other-symbolic'
     });
     window.add(page);
 
-    // Behavior preferences
-    const group = new Adw.PreferencesGroup({
-      title: _("Behavior"),
-      description: _("Enable quality of life features and tweak annoying defaults")
+    const overviewGroup = new Adw.PreferencesGroup({
+      title: _('Overview and Workspaces')
     });
-    page.add(group);
+    page.add(overviewGroup);
 
-    const noWindowAttentionRow = new Adw.SwitchRow({
-      title: _("No Window Attention Notification"),
-      subtitle: _("Focus new windows instead of showing a \"window is ready\" notification")
+    const showOverviewOnStartupRow = new Adw.SwitchRow({
+      title: _('Show Overview on Startup'),
+      subtitle: _('Toggle between showing the overview or the desktop on startup')
     });
-    group.add(noWindowAttentionRow);
+    overviewGroup.add(showOverviewOnStartupRow);
 
     const clickToCloseOverviewRow = new Adw.SwitchRow({
-      title: _("Click to Close the Overview"),
-      subtitle: _("Close the overview when clicking on the empty space around the background")
+      title: _('Click to Close the Overview'),
+      subtitle: _('Close the overview when clicking on the empty space around the background')
     });
-    group.add(clickToCloseOverviewRow);
+    overviewGroup.add(clickToCloseOverviewRow);
 
     const workspaceWraparoundRow = new Adw.SwitchRow({
-      title: _("Workspace Wraparound"),
-      subtitle: _("Allow switching from the last workspace to the first and vice versa")
+      title: _('Workspace Wraparound'),
+      subtitle: _('Allow switching from the last workspace to the first and vice versa')
     });
-    group.add(workspaceWraparoundRow);
+    overviewGroup.add(workspaceWraparoundRow);
+
+    const otherGroup = new Adw.PreferencesGroup({
+      title: _('Other')
+    });
+    page.add(otherGroup);
+
+    const noWindowAttentionRow = new Adw.SwitchRow({
+      title: _('No Window Attention Notification'),
+      subtitle: _('Focus new windows instead of showing a \"window is ready\" notification')
+    });
+    otherGroup.add(noWindowAttentionRow);
 
     // Bind settings
-    window._settings.bind("no-window-attention", noWindowAttentionRow, "active", Gio.SettingsBindFlags.DEFAULT);
-    window._settings.bind("click-to-close-overview", clickToCloseOverviewRow, "active", Gio.SettingsBindFlags.DEFAULT);
-    window._settings.bind("workspace-wraparound", workspaceWraparoundRow, "active", Gio.SettingsBindFlags.DEFAULT);
+    window._settings = this.getSettings();
+
+    window._settings.bind('click-to-close-overview', clickToCloseOverviewRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+    window._settings.bind('no-window-attention', noWindowAttentionRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+    window._settings.bind('show-overview-on-startup', showOverviewOnStartupRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+    window._settings.bind('workspace-wraparound', workspaceWraparoundRow, 'active', Gio.SettingsBindFlags.DEFAULT);
   }
 }
