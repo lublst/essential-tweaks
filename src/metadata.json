@@ -1,5 +1,5 @@
 {
-  "description": "A GNOME Shell extension",
+  "description": "Tweak annoying defaults and enable quality of life features",
   "name": "Essential Tweaks",
   "settings-schema": "org.gnome.shell.extensions.essential-tweaks",
   "shell-version": [

@@ -1,5 +1,8 @@
 # Essential Tweaks
-A GNOME Shell extension
+A GNOME Shell extension that allows you to tweak some annoying defaults and
+enable quality of life features. It also aims to reduce the time spent
+searching for compatible extensions when setting up a new system or after
+updating GNOME.
 
 ## Attributions
 This extension partially contains code adapted from the following projects:
