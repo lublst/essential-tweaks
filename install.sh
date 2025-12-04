@@ -10,22 +10,14 @@ NAME=essential-tweaks
 DOMAIN=lublst.github.io
 ZIP_NAME=$NAME@$DOMAIN.zip
 
-mkdir -p build
-cp -r assets build
-cp -r src/* build
-cp LICENSE build
-cp README.md build
-
 echo -e ":: Creating extension bundle..."
-cd build
+cd src
 zip -qr "$ZIP_NAME" *
 
 if [ $BUNDLE -eq 1 ]; then
-    cp "$ZIP_NAME" ..
+    mv "$ZIP_NAME" ..
 else
     echo -e ":: Installing extension..."
     gnome-extensions install -f "$ZIP_NAME"
+    rm "$ZIP_NAME"
 fi
-
-cd ..
-rm -rf build
