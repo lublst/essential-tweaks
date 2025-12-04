@@ -1,39 +1,56 @@
 import * as AppFavorites from 'resource:///org/gnome/shell/ui/appFavorites.js';
 
-export function updateNoFavoriteNotification() {
-  if (this._settings.get_boolean('no-favorite-notification')) {
-    enableNoFavoriteNotification.bind(this)();
-  } else {
-    disableNoFavoriteNotification.bind(this)();
-  }
-}
+export class NoFavoriteNotification {
+  constructor(settings) {
+    this._settings = settings;
+    this._favorites = AppFavorites.getAppFavorites();
 
-export function enableNoFavoriteNotification() {
-  const favorites = AppFavorites.getAppFavorites();
-
-  // Back up the original favorites prototype
-  this._originalFavoritesProto = {
-    addFavoriteAtPos: favorites.addFavoriteAtPos,
-    removeFavorite: favorites.removeFavorite
+    this._signal = this._settings.connect('changed::no-favorite-notification', () => {
+      this.update();
+    });
   }
 
-  // Override with methods that don't send notifications
-  Object.assign(AppFavorites.getAppFavorites(), {
-    addFavoriteAtPos(appId, pos) {
-      this._addFavorite(appId, pos);
-    },
-    removeFavorite(appId) {
-      this._removeFavorite(appId);
+  update() {
+    if (this._settings.get_boolean('no-favorite-notification')) {
+      this.enable();
+    } else {
+      this.disable();
     }
-  });
-}
-
-export function disableNoFavoriteNotification() {
-  const favorites = AppFavorites.getAppFavorites();
-
-  if (this._originalFavoritesProto) {
-    Object.assign(favorites, this._originalFavoritesProto);
   }
 
-  this._originalFavoritesProto = null;
+  enable() {
+    // Back up the original favorites prototype
+    this._originalProto = {
+      addFavoriteAtPos: this._favorites.addFavoriteAtPos,
+      removeFavorite: this._favorites.removeFavorite
+    }
+
+    // Override with methods that don't send notifications
+    Object.assign(this._favorites, {
+      addFavoriteAtPos(appId, pos) {
+        this._addFavorite(appId, pos);
+      },
+      removeFavorite(appId) {
+        this._removeFavorite(appId);
+      }
+    });
+  }
+
+  disable() {
+    if (this._originalProto) {
+      Object.assign(this._favorites, this._originalProto);
+    }
+
+    this._originalProto = null;
+  }
+
+  destroy() {
+    this._settings.disconnect(this._signal);
+
+    this.disable();
+
+    this._settings = null;
+    this._favorites = null;
+    this._signal = null;
+  }
 }

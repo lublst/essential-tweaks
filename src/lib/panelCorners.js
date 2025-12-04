@@ -7,83 +7,105 @@ import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { ANIMATION_TIME } from 'resource:///org/gnome/shell/ui/overview.js';
 
-export function updatePanelCorners() {
-  if (this._settings.get_boolean('panel-corners')) {
-    enablePanelCorners.bind(this)();
-  } else {
-    disablePanelCorners.bind(this)();
-  }
-}
+export class PanelCorners {
+  constructor(settings) {
+    this._settings = settings;
 
-export function enablePanelCorners() {
-  const init = () => {
-    this._panelCorners = new PanelCorners();
-
-    update();
+    this._signal = this._settings.connect('changed::panel-corners', () => {
+      this.update();
+    });
   }
 
-  const update = () => {
-    if (this._panelCorners) {
-      this._panelCorners.update();
+  update() {
+    if (this._settings.get_boolean('panel-corners')) {
+      this.enable();
+    } else {
+      this.disable();
     }
   }
 
-  if (this._main.layoutManager._startingUp) {
-    this._sharedSignals.panelCornersStartup = ['startup-complete', init];
-  } else {
-    init();
+  enable() {
+    this._startupHandler = Main.layoutManager.connect('startup-complete', () => {
+      this._updateCorners();
+    });
+
+    this._monitorsChangedHandler = Main.layoutManager.connect('monitors-changed', () => {
+      this._updateCorners();
+    });
+
+    this._workareasChangedHandler = global.display.connect('workareas-changed', () => {
+      this._updateCorners();
+    });
+
+    this._updateCorners();
   }
 
-  this._sharedSignals.panelCornersMonitorsChanged = ['monitors-changed', update];
-  this._sharedSignals.panelCornersWorkareasChanged = ['workareas-changed', update];
-}
+  disable() {
+    if (this._startupHandler) {
+      Main.layoutManager.disconnect(this._startupHandler);
+    }
 
-export function disablePanelCorners() {
-  if (this._panelCorners) {
-    this._panelCorners.remove();
+    if (this._monitorsChangedHandler) {
+      Main.layoutManager.disconnect(this._monitorsChangedHandler);
+    }
+
+    if (this._workareasChangedHandler) {
+      global.display.disconnect(this._workareasChangedHandler);
+    }
+
+    this._removeCorners();
+
+    this._startupHandler = null;
+    this._monitorsChangedHandler = null;
+    this._workareasChangedHandler = null;
   }
 
-  this._panelCorners = null;
+  destroy() {
+    this._settings.disconnect(this._signal);
 
-  delete this._sharedSignals.panelCornersStartup;
-  delete this._sharedSignals.panelCornersMonitorsChanged;
-  delete this._sharedSignals.panelCornersWorkareasChanged;
-}
+    this.disable();
 
-class PanelCorners {
-  update() {
+    this._settings = null;
+    this._signal = null;
+  }
+
+  _updateCorners() {
+    if (Main.layoutManager._startingUp) {
+      return;
+    }
+
     // Remove old corners
-    this.remove();
+    this._removeCorners();
 
     // Create new panel corners
     Main.panel._leftCorner = new PanelCorner(St.Side.LEFT);
     Main.panel._rightCorner = new PanelCorner(St.Side.RIGHT);
 
-    this.update_corner(Main.panel._leftCorner);
-    this.update_corner(Main.panel._rightCorner);
+    this._updateCorner(Main.panel._leftCorner);
+    this._updateCorner(Main.panel._rightCorner);
   }
 
-  update_corner(corner) {
+  _updateCorner(corner) {
     Main.panel.bind_property('style', corner, 'style', GObject.BindingFlags.SYNC_CREATE);
     Main.panel.add_child(corner);
 
     corner.vfunc_style_changed();
   }
 
-  remove() {
+  _removeCorners() {
     if (Main.panel._leftCorner) {
-      this.remove_corner(Main.panel._leftCorner);
+      this._removeCorner(Main.panel._leftCorner);
     }
 
     if (Main.panel._rightCorner) {
-      this.remove_corner(Main.panel._rightCorner);
+      this._removeCorner(Main.panel._rightCorner);
     }
 
     Main.panel._leftCorner = null;
     Main.panel._rightCorner = null;
   }
 
-  remove_corner(corner) {
+  _removeCorner(corner) {
     Main.panel.remove_child(corner);
 
     corner.disconnectSignals();

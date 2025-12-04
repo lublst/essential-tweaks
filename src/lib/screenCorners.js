@@ -6,53 +6,71 @@ import St from 'gi://St';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
-export function updateScreenCorners() {
-  if (this._settings.get_boolean('screen-corners')) {
-    enableScreenCorners.bind(this)();
-  } else {
-    disableScreenCorners.bind(this)();
-  }
-}
+export class ScreenCorners {
+  constructor(settings) {
+    this._settings = settings;
 
-export function enableScreenCorners() {
-  const init = () => {
-    this._screenCorners = new ScreenCorners();
-
-    update();
+    this._signal = this._settings.connect('changed::screen-corners', () => {
+      this.update();
+    });
   }
 
-  const update = () => {
-    if (this._screenCorners) {
-      this._screenCorners.update();
+  update() {
+    if (this._settings.get_boolean('screen-corners')) {
+      this.enable();
+    } else {
+      this.disable();
     }
   }
 
-  if (this._main.layoutManager._startingUp) {
-    this._sharedSignals.screenCornersStartup = ['startup-complete', init];
-  } else {
-    init();
+  enable() {
+    this._startupHandler = Main.layoutManager.connect('startup-complete', () => {
+      this._updateCorners();
+    });
+
+    this._monitorsChangedHandler = Main.layoutManager.connect('monitors-changed', () => {
+      this._updateCorners();
+    });
+
+    this._workareasChangedHandler = global.display.connect('workareas-changed', () => {
+      this._updateCorners();
+    });
+
+    this._updateCorners();
   }
 
-  this._sharedSignals.screenCornersMonitorsChanged = ['monitors-changed', update];
-  this._sharedSignals.screenCornersWorkareasChanged = ['workareas-changed', update];
-}
+  disable() {
+    if (this._startupHandler) {
+      Main.layoutManager.disconnect(this._startupHandler);
+    }
 
-export function disableScreenCorners() {
-  if (this._screenCorners) {
-    this._screenCorners.remove();
+    if (this._monitorsChangedHandler) {
+      Main.layoutManager.disconnect(this._monitorsChangedHandler);
+    }
+
+    if (this._workareasChangedHandler) {
+      global.display.disconnect(this._workareasChangedHandler);
+    }
+
+    this._removeCorners();
+
+    this._startupHandler = null;
+    this._monitorsChangedHandler = null;
+    this._workareasChangedHandler = null;
   }
 
-  this._screenCorners = null;
+  destroy() {
+    this._settings.disconnect(this._signal);
 
-  delete this._sharedSignals.screenCornersStartup;
-  delete this._sharedSignals.screenCornersMonitorsChanged;
-  delete this._sharedSignals.screenCornersWorkareasChanged;
-}
+    this.disable();
 
-class ScreenCorners {
-  update() {
+    this._settings = null;
+    this._signal = null;
+  }
+
+  _updateCorners() {
     // Remove old corners
-    this.remove();
+    this._removeCorners();
 
     // Create new corners on every monitor
     const corners = [
@@ -72,7 +90,7 @@ class ScreenCorners {
     });
   }
 
-  remove() {
+  _removeCorners() {
     if (Main.layoutManager._screenCorners) {
       Main.layoutManager._screenCorners.forEach(corner => {
         corner.destroy();

@@ -1,33 +1,57 @@
-export function updateNoOverviewOnStartup() {
-  if (this._settings.get_boolean('show-overview-on-startup')) {
-    disableNoOverviewOnStartup.bind(this)();
-  } else {
-    enableNoOverviewOnStartup.bind(this)();
-  }
-}
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
-export function enableNoOverviewOnStartup() {
-  if (!this._main.layoutManager._startingUp) {
-    return;
+export class NoOverviewOnStartup {
+  constructor(settings) {
+    this._settings = settings;
+
+    this._signal = this._settings.connect('changed::show-overview-on-startup', () => {
+      this.update();
+    });
   }
 
-  // Disable the overview entirely
-  if (this._originalHasOverview != null) {
-    this._originalHasOverview = this._main.sessionMode.hasOverview;
+  update() {
+    if (this._settings.get_boolean('show-overview-on-startup')) {
+      this.disable();
+    } else {
+      this.enable();
+    }
   }
 
-  this._main.sessionMode.hasOverview = false;
+  enable() {
+    if (!Main.layoutManager._startingUp) {
+      return;
+    }
 
-  // Restore the original state after startup is complete
-  this._sharedSignals.noOverviewOnStartup = ['startup-complete', disableNoOverviewOnStartup.bind(this)];
-}
+    if (this._originalHasOverview != null) {
+      this._originalHasOverview = Main.sessionMode.hasOverview;
+    }
 
-export function disableNoOverviewOnStartup() {
-  if (this._originalHasOverview != null) {
-    this._main.sessionMode.hasOverview = this._originalHasOverview;
+    Main.sessionMode.hasOverview = false;
+
+    this._startupSignal = Main.layoutManager.connect('startup-complete', () => {
+      this.disable();
+    });
   }
 
-  this._originalHasOverview = null;
+  disable() {
+    if (this._originalHasOverview != null) {
+      Main.sessionMode.hasOverview = this._originalHasOverview;
+    }
 
-  delete this._sharedSignals.noOverviewOnStartup;
+    if (this._startupSignal) {
+      Main.layoutManager.disconnect(this._startupSignal);
+    }
+
+    this._originalHasOverview = null;
+    this._startupSignal = null;
+  }
+
+  destroy() {
+    this._settings.disconnect(this._signal);
+
+    this.disable();
+
+    this._settings = null;
+    this._signal = null;
+  }
 }
