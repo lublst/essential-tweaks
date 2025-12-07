@@ -5,16 +5,16 @@ import { ExtensionPreferences, gettext as _ } from 'resource:///org/gnome/Shell/
 
 export default class EssentialTweaksPreferences extends ExtensionPreferences {
   fillPreferencesWindow(window) {
-    const page = new Adw.PreferencesPage({
+    const behaviorPage = new Adw.PreferencesPage({
       title: _('Behavior'),
-      icon_name: 'preferences-other-symbolic'
+      icon_name: 'org.gnome.Settings-system-symbolic'
     });
-    window.add(page);
+    window.add(behaviorPage);
 
     const overviewGroup = new Adw.PreferencesGroup({
       title: _('Overview and Workspaces')
     });
-    page.add(overviewGroup);
+    behaviorPage.add(overviewGroup);
 
     const showOverviewOnStartupRow = new Adw.SwitchRow({
       title: _('Show Overview on Startup'),
@@ -34,27 +34,10 @@ export default class EssentialTweaksPreferences extends ExtensionPreferences {
     });
     overviewGroup.add(workspaceWraparoundRow);
 
-    const appearanceGroup = new Adw.PreferencesGroup({
-      title: _('Appearance')
-    });
-    page.add(appearanceGroup);
-
-    const screenCornersRow = new Adw.SwitchRow({
-      title: _('Screen Corners'),
-      subtitle: _('Round the corners of the screen for a more premium look')
-    });
-    appearanceGroup.add(screenCornersRow);
-
-    const panelCornersRow = new Adw.SwitchRow({
-      title: _('Panel Corners'),
-      subtitle: _('Also round the corners of the panel')
-    });
-    appearanceGroup.add(panelCornersRow);
-
     const otherGroup = new Adw.PreferencesGroup({
       title: _('Other')
     });
-    page.add(otherGroup);
+    behaviorPage.add(otherGroup);
 
     const noWindowAttentionRow = new Adw.SwitchRow({
       title: _('No Window Attention Notification'),
@@ -67,6 +50,29 @@ export default class EssentialTweaksPreferences extends ExtensionPreferences {
       subtitle: _('Don\'t show a notification when pinning an app to the dash')
     });
     otherGroup.add(noFavoriteNotificationRow);
+
+    const appearancePage = new Adw.PreferencesPage({
+      title: _('Appearance'),
+      icon_name: 'org.gnome.Settings-appearance-symbolic'
+    });
+    window.add(appearancePage);
+
+    const cornersGroup = new Adw.PreferencesGroup({
+      title: _('Corners'),
+    });
+    appearancePage.add(cornersGroup);
+
+    const screenCornersRow = new Adw.SwitchRow({
+      title: _('Screen Corners'),
+      subtitle: _('Round the corners of the screen for a more premium look')
+    });
+    cornersGroup.add(screenCornersRow);
+
+    const panelCornersRow = new Adw.SwitchRow({
+      title: _('Panel Corners'),
+      subtitle: _('Also round the corners of the panel')
+    });
+    cornersGroup.add(panelCornersRow);
 
     // Bind settings
     window._settings = this.getSettings();

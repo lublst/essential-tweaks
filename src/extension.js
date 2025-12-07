@@ -15,8 +15,8 @@ export default class EssentialTweaksExtension extends Extension {
     this._modules = [
       new ClickToCloseOverview(this._settings),
       new NoFavoriteNotification(this._settings),
-      new NoWindowAttention(this._settings),
       new NoOverviewOnStartup(this._settings),
+      new NoWindowAttention(this._settings),
       new PanelCorners(this._settings),
       new ScreenCorners(this._settings),
       new WorkspaceWraparound(this._settings)
