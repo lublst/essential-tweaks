@@ -6,6 +6,10 @@
       <default>true</default>
     </key>
 
+    <key name="keep-favorites-in-app-grid" type="b">
+      <default>true</default>
+    </key>
+
     <key name="no-favorite-notifications" type="b">
       <default>true</default>
     </key>
@@ -18,11 +22,11 @@
       <default>true</default>
     </key>
 
-    <key name="panel-corners-left-color" type="s">
+    <key name="panel-left-corner-color" type="s">
       <default>'#000000'</default>
     </key>
 
-    <key name="panel-corners-right-color" type="s">
+    <key name="panel-right-corner-color" type="s">
       <default>'#000000'</default>
     </key>
 

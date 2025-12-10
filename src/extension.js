@@ -1,6 +1,7 @@
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 
 import { ClickToCloseOverview } from './lib/clickToCloseOverview.js';
+import { KeepFavoritesInAppGrid } from './lib/keepFavoritesInAppGrid.js';
 import { NoFavoriteNotifications } from './lib/noFavoriteNotifications.js';
 import { NoOverviewOnStartup } from './lib/noOverviewOnStartup.js';
 import { NoWindowReadyNotifications } from './lib/noWindowReadyNotifications.js';
@@ -14,6 +15,7 @@ export default class EssentialTweaksExtension extends Extension {
 
     this._modules = [
       new ClickToCloseOverview(this._settings),
+      new KeepFavoritesInAppGrid(this._settings),
       new NoFavoriteNotifications(this._settings),
       new NoOverviewOnStartup(this._settings),
       new NoWindowReadyNotifications(this._settings),

@@ -23,11 +23,13 @@ export class NoFavoriteNotifications {
   }
 
   enable() {
-    this._injectionManager.overrideMethod(this._favorites, 'addFavoriteAtPos', () => function (appId, pos) {
+    const favoritesProto = this._favorites.constructor.prototype;
+
+    this._injectionManager.overrideMethod(favoritesProto, 'addFavoriteAtPos', () => function (appId, pos) {
       this._addFavorite(appId, pos);
     });
 
-    this._injectionManager.overrideMethod(this._favorites, 'removeFavorite', () => function (appId) {
+    this._injectionManager.overrideMethod(favoritesProto, 'removeFavorite', () => function (appId) {
       this._removeFavorite(appId);
     });
   }

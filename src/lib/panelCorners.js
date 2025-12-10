@@ -5,6 +5,7 @@ import GObject from 'gi://GObject';
 import St from 'gi://St';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+
 import { ANIMATION_TIME } from 'resource:///org/gnome/shell/ui/overview.js';
 
 export class PanelCorners {
@@ -128,8 +129,8 @@ class PanelCorner extends St.DrawingArea {
     this._radius = 12 * scaleFactor;
 
     this._signals = [
-      this._settings.connect('changed::panel-corners-left-color', this.vfunc_style_changed.bind(this)),
-      this._settings.connect('changed::panel-corners-right-color', this.vfunc_style_changed.bind(this))
+      this._settings.connect('changed::panel-left-corner-color', this.vfunc_style_changed.bind(this)),
+      this._settings.connect('changed::panel-right-corner-color', this.vfunc_style_changed.bind(this))
     ];
 
     this._positionChangeHandler = Main.panel.connect('notify::position', this._updateCornerPosition.bind(this));
@@ -211,7 +212,7 @@ class PanelCorner extends St.DrawingArea {
 
   _getCornerColor() {
     const side = this._side === St.Side.LEFT ? 'left' : 'right';
-    const color = this._settings.get_string(`panel-corners-${side}-color`);
+    const color = this._settings.get_string(`panel-${side}-corner-color`);
 
     return Cogl.color_from_string(color)[1];
   }

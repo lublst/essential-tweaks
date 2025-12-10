@@ -41,7 +41,7 @@ export default class EssentialTweaksPreferences extends ExtensionPreferences {
 
     const noWindowReadyNotificationsRow = new Adw.SwitchRow({
       title: _('No Window Attention Notifications'),
-      subtitle: _('Focus new windows instead of showing a \"window is ready\" notification')
+      subtitle: _('Focus new windows instead of showing a "window is ready" notification')
     });
     otherGroup.add(noWindowReadyNotificationsRow);
 
@@ -50,6 +50,12 @@ export default class EssentialTweaksPreferences extends ExtensionPreferences {
       subtitle: _('Don\'t show notifications when pinning apps to the dash')
     });
     otherGroup.add(noFavoriteNotificationsRow);
+
+    const keepFavoritesInAppGridRow = new Adw.SwitchRow({
+      title: _('Keep Favorites in App Grid'),
+      subtitle: _('Because the app grid is for all apps')
+    });
+    otherGroup.add(keepFavoritesInAppGridRow);
 
     const appearancePage = new Adw.PreferencesPage({
       title: _('Appearance'),
@@ -78,6 +84,7 @@ export default class EssentialTweaksPreferences extends ExtensionPreferences {
     window._settings = this.getSettings();
 
     window._settings.bind('click-to-close-overview', clickToCloseOverviewRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+    window._settings.bind('keep-favorites-in-app-grid', keepFavoritesInAppGridRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('no-favorite-notifications', noFavoriteNotificationsRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('no-window-ready-notifications', noWindowReadyNotificationsRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('panel-corners', panelCornersRow, 'active', Gio.SettingsBindFlags.DEFAULT);
