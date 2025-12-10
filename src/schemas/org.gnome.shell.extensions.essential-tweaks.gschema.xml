@@ -6,11 +6,11 @@
       <default>true</default>
     </key>
 
-    <key name="no-favorite-notification" type="b">
+    <key name="no-favorite-notifications" type="b">
       <default>true</default>
     </key>
 
-    <key name="no-window-attention" type="b">
+    <key name="no-window-ready-notifications" type="b">
       <default>true</default>
     </key>
 

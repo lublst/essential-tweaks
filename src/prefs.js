@@ -39,17 +39,17 @@ export default class EssentialTweaksPreferences extends ExtensionPreferences {
     });
     behaviorPage.add(otherGroup);
 
-    const noWindowAttentionRow = new Adw.SwitchRow({
-      title: _('No Window Attention Notification'),
+    const noWindowReadyNotificationsRow = new Adw.SwitchRow({
+      title: _('No Window Attention Notifications'),
       subtitle: _('Focus new windows instead of showing a \"window is ready\" notification')
     });
-    otherGroup.add(noWindowAttentionRow);
+    otherGroup.add(noWindowReadyNotificationsRow);
 
-    const noFavoriteNotificationRow = new Adw.SwitchRow({
-      title: _('No Favorite Notification'),
-      subtitle: _('Don\'t show a notification when pinning an app to the dash')
+    const noFavoriteNotificationsRow = new Adw.SwitchRow({
+      title: _('No Favorite Notifications'),
+      subtitle: _('Don\'t show notifications when pinning apps to the dash')
     });
-    otherGroup.add(noFavoriteNotificationRow);
+    otherGroup.add(noFavoriteNotificationsRow);
 
     const appearancePage = new Adw.PreferencesPage({
       title: _('Appearance'),
@@ -78,8 +78,8 @@ export default class EssentialTweaksPreferences extends ExtensionPreferences {
     window._settings = this.getSettings();
 
     window._settings.bind('click-to-close-overview', clickToCloseOverviewRow, 'active', Gio.SettingsBindFlags.DEFAULT);
-    window._settings.bind('no-favorite-notification', noFavoriteNotificationRow, 'active', Gio.SettingsBindFlags.DEFAULT);
-    window._settings.bind('no-window-attention', noWindowAttentionRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+    window._settings.bind('no-favorite-notifications', noFavoriteNotificationsRow, 'active', Gio.SettingsBindFlags.DEFAULT);
+    window._settings.bind('no-window-ready-notifications', noWindowReadyNotificationsRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('panel-corners', panelCornersRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('screen-corners', screenCornersRow, 'active', Gio.SettingsBindFlags.DEFAULT);
     window._settings.bind('show-overview-on-startup', showOverviewOnStartupRow, 'active', Gio.SettingsBindFlags.DEFAULT);

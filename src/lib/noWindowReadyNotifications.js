@@ -1,16 +1,16 @@
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
-export class NoWindowAttention {
+export class NoWindowReadyNotifications {
   constructor(settings) {
     this._settings = settings;
 
-    this._signal = this._settings.connect('changed::no-window-attention', () => {
+    this._signal = this._settings.connect('changed::no-window-ready-notifications', () => {
       this.update();
     });
   }
 
   update() {
-    if (this._settings.get_boolean('no-window-attention')) {
+    if (this._settings.get_boolean('no-window-ready-notifications')) {
       this.enable();
     } else {
       this.disable();

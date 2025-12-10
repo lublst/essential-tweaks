@@ -1,9 +1,9 @@
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 
 import { ClickToCloseOverview } from './lib/clickToCloseOverview.js';
-import { NoFavoriteNotification } from './lib/noFavoriteNotification.js';
+import { NoFavoriteNotifications } from './lib/noFavoriteNotifications.js';
 import { NoOverviewOnStartup } from './lib/noOverviewOnStartup.js';
-import { NoWindowAttention } from './lib/noWindowAttention.js';
+import { NoWindowReadyNotifications } from './lib/noWindowReadyNotifications.js';
 import { PanelCorners } from './lib/panelCorners.js';
 import { ScreenCorners } from './lib/screenCorners.js';
 import { WorkspaceWraparound } from './lib/workspaceWraparound.js';
@@ -14,9 +14,9 @@ export default class EssentialTweaksExtension extends Extension {
 
     this._modules = [
       new ClickToCloseOverview(this._settings),
-      new NoFavoriteNotification(this._settings),
+      new NoFavoriteNotifications(this._settings),
       new NoOverviewOnStartup(this._settings),
-      new NoWindowAttention(this._settings),
+      new NoWindowReadyNotifications(this._settings),
       new PanelCorners(this._settings),
       new ScreenCorners(this._settings),
       new WorkspaceWraparound(this._settings)
