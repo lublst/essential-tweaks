@@ -199,13 +199,15 @@ class PanelCorner extends St.DrawingArea {
     this.set_size(this._radius, this._radius);
     this._updateCornerPosition();
 
-    const panelClass = Main.panel.get_style_pseudo_class();
-    const inOverview = panelClass && panelClass.includes('overview');
+    const pseudoClass = Main.panel.pseudo_class;
+    const styleClass = Main.panel.style_class;
+    const inOverview = pseudoClass && pseudoClass.includes('overview');
+    const isDashToPanel = styleClass && styleClass.includes('dashtopanelMainPanel');
 
     this.remove_transition('opacity');
     this.ease({
-      opacity: inOverview ? 0 : 255,
-      duration: ANIMATION_TIME,
+      opacity: inOverview || isDashToPanel ? 0 : 255,
+      duration: isDashToPanel ? 0 : ANIMATION_TIME,
       mode: Clutter.AnimationMode.EASE_IN_OUT_QUAD,
     });
   }
